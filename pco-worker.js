@@ -148,71 +148,58 @@ function extractUpcomingSundayPlanIds(pcoPayload) {
   const plans = pcoPayload?.data || [];
   const included = pcoPayload?.included || [];
 
-  // Build map: planId -> earliest future Sunday plan_time starts_at
-  const planEarliestSunday = new Map();
-
+  // Build a lookup of PlanTime id -> PlanTime attributes
+  const planTimeById = new Map();
   for (const inc of included) {
     if (inc.type !== "PlanTime") continue;
-    const startsAt = inc?.attributes?.starts_at;
-    const planId = inc?.relationships?.plan?.data?.id;
-    if (!startsAt || !planId) continue;
-    const ts = Date.parse(startsAt);
-    if (!Number.isFinite(ts) || ts < now) continue;
-    if (!isSundayInAmericaChicago(startsAt)) continue;
-
-    const existing = planEarliestSunday.get(planId);
-    if (!existing || ts < Date.parse(existing.starts_at)) {
-      planEarliestSunday.set(planId, {
-        starts_at: startsAt,
-        sunday_date_local: dateKeyAmericaChicago(startsAt),
-        date_display: toLocalDisplayAmericaChicago(startsAt),
-      });
-    }
+    planTimeById.set(inc.id, inc);
   }
 
-  // Also capture ALL plan_times for a plan (for service times listing)
-  const planAllTimes = new Map();
-  for (const inc of included) {
-    if (inc.type !== "PlanTime") continue;
-    const startsAt = inc?.attributes?.starts_at;
-    const planId = inc?.relationships?.plan?.data?.id;
-    if (!startsAt || !planId) continue;
-    const ts = Date.parse(startsAt);
-    if (!Number.isFinite(ts) || ts < now) continue;
-    if (!isSundayInAmericaChicago(startsAt)) continue;
-
-    if (!planAllTimes.has(planId)) planAllTimes.set(planId, []);
-    planAllTimes.get(planId).push({
-      starts_at: startsAt,
-      time_display: toTimeDisplayAmericaChicago(startsAt),
-      name: inc?.attributes?.name || "",
-      plan_time_id: inc.id,
-    });
-  }
-
-  // Sort by starts_at and keep only the next 2 distinct Sunday dates
-  const entries = [...planEarliestSunday.entries()].sort(
-    (a, b) => Date.parse(a[1].starts_at) - Date.parse(b[1].starts_at)
-  );
-
-  const seenDates = new Set();
   const result = [];
-  for (const [planId, info] of entries) {
-    if (!seenDates.has(info.sunday_date_local)) {
-      if (seenDates.size >= 2) break;
-      seenDates.add(info.sunday_date_local);
+  const seenDates = new Set();
+
+  for (const plan of plans) {
+    // Get the PlanTime IDs linked to this plan via the plan's relationships
+    const planTimeRefs = plan?.relationships?.plan_times?.data || [];
+
+    const futureSundayTimes = [];
+
+    for (const ref of planTimeRefs) {
+      const pt = planTimeById.get(ref.id);
+      if (!pt) continue;
+      const startsAt = pt?.attributes?.starts_at;
+      if (!startsAt) continue;
+      const ts = Date.parse(startsAt);
+      if (!Number.isFinite(ts) || ts < now) continue;
+      if (!isSundayInAmericaChicago(startsAt)) continue;
+      futureSundayTimes.push(pt);
     }
-    const plan = plans.find((p) => p.id === planId);
-    const times = (planAllTimes.get(planId) || []).sort(
-      (a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at)
+
+    if (futureSundayTimes.length === 0) continue;
+
+    futureSundayTimes.sort((a, b) =>
+      Date.parse(a.attributes.starts_at) - Date.parse(b.attributes.starts_at)
     );
+
+    const firstTime = futureSundayTimes[0];
+    const startsAt = firstTime.attributes.starts_at;
+    const sundayDate = dateKeyAmericaChicago(startsAt);
+
+    if (seenDates.size >= 2 && !seenDates.has(sundayDate)) break;
+    seenDates.add(sundayDate);
+
     result.push({
-      plan_id: planId,
+      plan_id: plan.id,
       plan_title: plan?.attributes?.title || "",
-      plan_url: `https://services.planningcenteronline.com/plans/${planId}`,
-      sunday_date_local: info.sunday_date_local,
-      date_display: info.date_display,
-      service_times: times,
+      plan_url: `https://services.planningcenteronline.com/plans/${plan.id}`,
+      sunday_date_local: sundayDate,
+      date_display: toLocalDisplayAmericaChicago(startsAt),
+      service_times: futureSundayTimes.map((pt) => ({
+        starts_at: pt.attributes.starts_at,
+        time_display: toTimeDisplayAmericaChicago(pt.attributes.starts_at),
+        name: pt.attributes.name || "",
+        plan_time_id: pt.id,
+      })),
     });
   }
 
