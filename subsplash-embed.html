@@ -1,0 +1,408 @@
+<!-- Upcoming Services from Planning Center -->
+<!-- Paste YOUR worker URL below where it says YOUR-WORKER-URL -->
+
+<style>
+  #pco-services-widget * { box-sizing: border-box; }
+  #pco-services-widget {
+    font-family: Georgia, 'Times New Roman', serif;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 8px 0;
+    color: #1a1a1a;
+  }
+  .pco-loading {
+    padding: 20px 0;
+    color: #888;
+    font-style: italic;
+    font-size: 15px;
+  }
+  .pco-error {
+    padding: 12px 16px;
+    background: #fff5f5;
+    border-left: 3px solid #e53e3e;
+    border-radius: 4px;
+    color: #c53030;
+    font-size: 14px;
+  }
+
+  /* Date group */
+  .pco-date-group {
+    margin-bottom: 36px;
+  }
+  .pco-date-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #1a1a1a;
+  }
+  .pco-date-label {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  .pco-plan-title {
+    font-size: 14px;
+    color: #666;
+    font-style: italic;
+  }
+  .pco-times {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .pco-time-chip {
+    background: #f4f4f4;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 13px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #444;
+  }
+  .pco-time-name {
+    font-weight: 600;
+    color: #222;
+  }
+
+  /* Songs section */
+  .pco-songs-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 10px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  .pco-songs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Individual song card */
+  .pco-song-card {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 14px 16px;
+    transition: box-shadow 0.15s;
+  }
+  .pco-song-card:hover {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .pco-song-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .pco-song-left {
+    flex: 1;
+    min-width: 0;
+  }
+  .pco-song-number {
+    font-size: 11px;
+    color: #bbb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    margin-bottom: 2px;
+  }
+  .pco-song-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    text-decoration: none;
+    display: block;
+    line-height: 1.3;
+  }
+  .pco-song-title:hover {
+    color: #2b6cb0;
+    text-decoration: underline;
+  }
+  .pco-song-author {
+    font-size: 13px;
+    color: #888;
+    margin-top: 2px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  .pco-key-badge {
+    flex-shrink: 0;
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 6px;
+    padding: 5px 11px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: 0.5px;
+    min-width: 38px;
+    text-align: center;
+  }
+  .pco-key-badge.empty {
+    background: #f0f0f0;
+    color: #bbb;
+    font-weight: 400;
+    font-size: 12px;
+  }
+
+  /* Action buttons */
+  .pco-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .pco-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+    white-space: nowrap;
+  }
+  .pco-btn:hover { opacity: 0.82; }
+
+  .pco-btn-mp3 {
+    background: #ebf8ee;
+    color: #276749;
+    border-color: #9ae6b4;
+  }
+  .pco-btn-chord {
+    background: #ebf4ff;
+    color: #2b52a0;
+    border-color: #90cdf4;
+  }
+  .pco-btn-lead {
+    background: #fef3eb;
+    color: #9c4221;
+    border-color: #fbd38d;
+  }
+  .pco-btn-pco {
+    background: #f7f7f7;
+    color: #555;
+    border-color: #d8d8d8;
+  }
+
+  /* No songs */
+  .pco-no-songs {
+    font-size: 13px;
+    color: #aaa;
+    font-style: italic;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 8px 0;
+  }
+
+  @media (max-width: 480px) {
+    .pco-date-label { font-size: 18px; }
+    .pco-song-title { font-size: 15px; }
+    .pco-song-header { flex-wrap: wrap; }
+    .pco-key-badge { align-self: flex-start; }
+  }
+</style>
+
+<div id="pco-services-widget">
+  <div class="pco-loading">Loading upcoming services…</div>
+</div>
+
+<script>
+(function () {
+  // ============================================================
+  // CONFIGURE: Replace with your actual Cloudflare Worker URL
+  // ============================================================
+  var WORKER_URL = "https://YOUR-WORKER-URL.workers.dev/";
+  // ============================================================
+
+  var widget = document.getElementById("pco-services-widget");
+
+  // SVG icons (inline, no external deps)
+  var icons = {
+    mp3: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16"/></svg>',
+    chord: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+    lead: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>',
+    link: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+    ext: '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15,3 21,3 21,9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>',
+  };
+
+  function makeBtn(href, cls, iconKey, label) {
+    var a = document.createElement("a");
+    a.className = "pco-btn " + cls;
+    a.href = href;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.innerHTML = icons[iconKey] + " " + label;
+    return a;
+  }
+
+  function renderSong(song, index) {
+    var card = document.createElement("div");
+    card.className = "pco-song-card";
+
+    // Header row
+    var header = document.createElement("div");
+    header.className = "pco-song-header";
+
+    var left = document.createElement("div");
+    left.className = "pco-song-left";
+
+    var num = document.createElement("div");
+    num.className = "pco-song-number";
+    num.textContent = "#" + (index + 1);
+
+    var titleEl;
+    if (song.song_url) {
+      titleEl = document.createElement("a");
+      titleEl.href = song.song_url;
+      titleEl.target = "_blank";
+      titleEl.rel = "noopener noreferrer";
+    } else {
+      titleEl = document.createElement("span");
+    }
+    titleEl.className = "pco-song-title";
+    titleEl.textContent = song.title;
+
+    left.appendChild(num);
+    left.appendChild(titleEl);
+
+    if (song.author) {
+      var author = document.createElement("div");
+      author.className = "pco-song-author";
+      author.textContent = song.author;
+      left.appendChild(author);
+    }
+
+    var keyBadge = document.createElement("div");
+    keyBadge.className = song.key ? "pco-key-badge" : "pco-key-badge empty";
+    keyBadge.textContent = song.key || "—";
+    keyBadge.title = song.key ? "Key: " + song.key : "No key set";
+
+    header.appendChild(left);
+    header.appendChild(keyBadge);
+
+    // Actions row
+    var actions = document.createElement("div");
+    actions.className = "pco-actions";
+
+    // Group attachments by category (take first of each type)
+    var byCategory = {};
+    (song.attachments || []).forEach(function (att) {
+      if (!byCategory[att.category]) byCategory[att.category] = att;
+    });
+
+    if (byCategory.mp3) {
+      actions.appendChild(makeBtn(byCategory.mp3.download_url, "pco-btn-mp3", "mp3", "MP3"));
+    }
+    if (byCategory.chord_chart) {
+      actions.appendChild(makeBtn(byCategory.chord_chart.download_url, "pco-btn-chord", "chord", "Chord Chart"));
+    }
+    if (byCategory.lead_sheet) {
+      actions.appendChild(makeBtn(byCategory.lead_sheet.download_url, "pco-btn-lead", "lead", "Lead Sheet"));
+    }
+    if (song.song_url) {
+      actions.appendChild(makeBtn(song.song_url, "pco-btn-pco", "ext", "PCO Song Page"));
+    }
+
+    card.appendChild(header);
+    if (actions.children.length > 0) {
+      card.appendChild(actions);
+    }
+
+    return card;
+  }
+
+  function renderService(service) {
+    var group = document.createElement("div");
+    group.className = "pco-date-group";
+
+    // Date header
+    var dateHeader = document.createElement("div");
+    dateHeader.className = "pco-date-header";
+
+    var dateLabel = document.createElement("div");
+    dateLabel.className = "pco-date-label";
+    dateLabel.textContent = service.date_display;
+
+    dateHeader.appendChild(dateLabel);
+
+    if (service.plan_title) {
+      var planTitle = document.createElement("div");
+      planTitle.className = "pco-plan-title";
+      planTitle.textContent = service.plan_title;
+      dateHeader.appendChild(planTitle);
+    }
+
+    group.appendChild(dateHeader);
+
+    // Service times chips
+    if (service.service_times && service.service_times.length > 0) {
+      var timesRow = document.createElement("div");
+      timesRow.className = "pco-times";
+      service.service_times.forEach(function (t) {
+        var chip = document.createElement("div");
+        chip.className = "pco-time-chip";
+        chip.innerHTML = (t.name ? '<span class="pco-time-name">' + escapeHtml(t.name) + '</span> · ' : "") + escapeHtml(t.time_display);
+        timesRow.appendChild(chip);
+      });
+      group.appendChild(timesRow);
+    }
+
+    // Songs
+    var songsLabel = document.createElement("div");
+    songsLabel.className = "pco-songs-label";
+    songsLabel.textContent = "Worship Songs";
+    group.appendChild(songsLabel);
+
+    if (!service.songs || service.songs.length === 0) {
+      var noSongs = document.createElement("div");
+      noSongs.className = "pco-no-songs";
+      noSongs.textContent = "No songs added yet.";
+      group.appendChild(noSongs);
+    } else {
+      var songsList = document.createElement("div");
+      songsList.className = "pco-songs-list";
+      service.songs.forEach(function (song, i) {
+        songsList.appendChild(renderSong(song, i));
+      });
+      group.appendChild(songsList);
+    }
+
+    return group;
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  fetch(WORKER_URL)
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      widget.innerHTML = "";
+
+      if (!data.services || data.services.length === 0) {
+        widget.innerHTML = '<div class="pco-no-songs">No upcoming Sunday services found.</div>';
+        return;
+      }
+
+      data.services.forEach(function (service) {
+        widget.appendChild(renderService(service));
+      });
+    })
+    .catch(function (err) {
+      widget.innerHTML = '<div class="pco-error">Couldn\'t load upcoming services. Please check back later.</div>';
+      console.error("PCO widget error:", err);
+    });
+})();
+</script>
