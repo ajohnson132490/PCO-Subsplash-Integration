@@ -3,7 +3,7 @@
  * with songs, keys, and attachment download links
  *
  * Env vars (secrets):
- * - PCO_APP_ID
+ * - PCO_CLIENT_ID
  * - PCO_SECRET
  * - PCO_SERVICE_TYPE_ID
  * Optional:
@@ -79,8 +79,8 @@ function toTimeDisplayAmericaChicago(isoString) {
   }).format(new Date(isoString));
 }
 
-function base64Basic(appId, secret) {
-  return `Basic ${btoa(`${appId}:${secret}`)}`;
+function base64Basic(clientId, secret) {
+  return `Basic ${btoa(`${clientId}:${secret}`)}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -88,7 +88,7 @@ function base64Basic(appId, secret) {
 // ---------------------------------------------------------------------------
 
 async function pcoGet(path, env) {
-  const auth = base64Basic(env.PCO_APP_ID, env.PCO_SECRET);
+  const auth = base64Basic(env.PCO_CLIENT_ID, env.PCO_SECRET);
   const resp = await fetch(`${PCO_API_BASE}${path}`, {
     headers: { Authorization: auth, Accept: "application/json" },
   });
@@ -383,7 +383,7 @@ export default {
       return jsonResponse({ ok: true }, 200, cors);
     }
 
-    for (const key of ["PCO_APP_ID", "PCO_SECRET", "PCO_SERVICE_TYPE_ID"]) {
+    for (const key of ["PCO_CLIENT_ID", "PCO_SECRET", "PCO_SERVICE_TYPE_ID"]) {
       if (!env[key])
         return jsonResponse({ error: `Missing env var: ${key}` }, 500, cors);
     }
