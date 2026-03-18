@@ -383,6 +383,11 @@ export default {
       return jsonResponse({ ok: true }, 200, cors);
     }
 
+    if (url.pathname === "/debug-plans") {
+  const payload = await fetchFuturePlans(env);
+  return jsonResponse(payload, 200, cors);
+}
+
     for (const key of ["PCO_CLIENT_ID", "PCO_SECRET", "PCO_SERVICE_TYPE_ID"]) {
       if (!env[key])
         return jsonResponse({ error: `Missing env var: ${key}` }, 500, cors);
